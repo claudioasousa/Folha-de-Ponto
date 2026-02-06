@@ -28,6 +28,7 @@ export const sqliteService = {
         db = new SQL.Database(u8);
       } else {
         db = new SQL.Database();
+        // Tabela de funcionários
         db.run(`
           CREATE TABLE IF NOT EXISTS employees (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,6 +36,13 @@ export const sqliteService = {
             registration TEXT UNIQUE NOT NULL,
             role TEXT NOT NULL,
             shift TEXT NOT NULL
+          )
+        `);
+        // Tabela de configurações (ex: cabeçalho da folha)
+        db.run(`
+          CREATE TABLE IF NOT EXISTS config (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
           )
         `);
       }
@@ -86,6 +94,28 @@ export const sqliteService = {
   async deleteEmployee(id: number) {
     const database = await this.init();
     database.run("DELETE FROM employees WHERE id = ?", [id]);
+    this.saveToLocalStorage();
+  },
+
+  async getConfig(key: string): Promise<string | null> {
+    const database = await this.init();
+    try {
+      const res = database.exec("SELECT value FROM config WHERE key = ?", [key]);
+      if (res.length > 0 && res[0].values.length > 0) {
+        return res[0].values[0][0] as string;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  async setConfig(key: string, value: string) {
+    const database = await this.init();
+    database.run(
+      "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+      [key, value]
+    );
     this.saveToLocalStorage();
   },
 

@@ -6,6 +6,9 @@ import { EmployeeForm } from './components/EmployeeForm';
 import { EmployeeList } from './components/EmployeeList';
 import { TimesheetModule } from './components/TimesheetModule';
 
+// jsPDF types are handled globally via script tags
+declare const jspdf: any;
+
 const App: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,6 +70,63 @@ const App: React.FC = () => {
       emp.registration.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [employees, searchTerm]);
+
+  const handleExportEmployeePDF = async () => {
+    if (employees.length === 0) {
+      alert("Não há funcionários para exportar.");
+      return;
+    }
+
+    const doc = new jspdf.jsPDF();
+    const savedHeader = await sqliteService.getConfig('timesheet_header');
+    
+    // Header do Relatório
+    let currentY = 20;
+    if (savedHeader) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = savedHeader;
+      const headerLines = tempDiv.innerText.split('\n').filter(l => l.trim() !== '');
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      headerLines.forEach(line => {
+        doc.text(line.toUpperCase(), 105, currentY, { align: 'center' });
+        currentY += 5;
+      });
+      currentY += 5;
+    }
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("RELATÓRIO GERAL DE SERVIDORES", 105, currentY, { align: 'center' });
+    currentY += 10;
+
+    const tableData = employees.map(emp => [
+      emp.name.toUpperCase(),
+      emp.registration,
+      emp.role.toUpperCase(),
+      emp.shift.toUpperCase()
+    ]);
+
+    doc.autoTable({
+      startY: currentY,
+      head: [['NOME DO SERVIDOR', 'MATRÍCULA', 'CARGO/FUNÇÃO', 'TURNO']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [51, 65, 85], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 },
+      alternateRowStyles: { fillColor: [248, 250, 252] }
+    });
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Página ${i} de ${pageCount} - Gerado em ${new Date().toLocaleString()}`, 105, 285, { align: 'center' });
+    }
+
+    doc.save(`relatorio_servidores_${new Date().getTime()}.pdf`);
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -159,7 +219,7 @@ const App: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">V 2.0 - SQLite</span>
+            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">V 2.5 - SQLite</span>
           </div>
         </header>
 
@@ -194,6 +254,15 @@ const App: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
+                      <button
+                        onClick={handleExportEmployeePDF}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm font-bold transition-all whitespace-nowrap"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Exportar PDF
+                      </button>
                       <div className="text-sm font-bold text-slate-400">
                         {filteredEmployees.length} registros
                       </div>

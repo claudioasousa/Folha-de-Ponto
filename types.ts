@@ -9,4 +9,9 @@ export interface Employee {
   shift: ShiftType;
 }
 
+export interface Config {
+  key: string;
+  value: string;
+}
+
 export type ActiveModule = 'funcionarios' | 'folha';
