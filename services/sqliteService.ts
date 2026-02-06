@@ -9,11 +9,10 @@ export const sqliteService = {
   async init() {
     if (db) return db;
 
-    // Aguarda um pequeno delay se o script global ainda não estiver pronto
     if (typeof initSqlJs === 'undefined') {
       await new Promise(resolve => setTimeout(resolve, 500));
       if (typeof initSqlJs === 'undefined') {
-        throw new Error("A biblioteca SQL.js não foi carregada. Verifique sua conexão ou o link no index.html.");
+        throw new Error("A biblioteca SQL.js não foi carregada.");
       }
     }
 
@@ -23,7 +22,6 @@ export const sqliteService = {
 
     try {
       const SQL = await initSqlJs(config);
-      
       const savedDb = localStorage.getItem('sqlite_db_backup');
       if (savedDb) {
         const u8 = new Uint8Array(JSON.parse(savedDb));
@@ -52,10 +50,8 @@ export const sqliteService = {
     try {
       const res = database.exec("SELECT * FROM employees ORDER BY id DESC");
       if (res.length === 0) return [];
-
       const columns = res[0].columns;
       const values = res[0].values;
-
       return values.map((row: any[]) => {
         const obj: any = {};
         columns.forEach((col: string, index: number) => {
@@ -64,7 +60,6 @@ export const sqliteService = {
         return obj as Employee;
       });
     } catch (e) {
-      console.warn("Tabela não encontrada ou vazia", e);
       return [];
     }
   },
@@ -74,6 +69,16 @@ export const sqliteService = {
     database.run(
       "INSERT INTO employees (name, registration, role, workHours) VALUES (?, ?, ?, ?)",
       [employee.name, employee.registration, employee.role, employee.workHours]
+    );
+    this.saveToLocalStorage();
+  },
+
+  async updateEmployee(employee: Employee) {
+    if (!employee.id) return;
+    const database = await this.init();
+    database.run(
+      "UPDATE employees SET name = ?, registration = ?, role = ?, workHours = ? WHERE id = ?",
+      [employee.name, employee.registration, employee.role, employee.workHours, employee.id]
     );
     this.saveToLocalStorage();
   },
