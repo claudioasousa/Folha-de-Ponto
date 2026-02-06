@@ -64,6 +64,28 @@ const App: React.FC = () => {
     }
   };
 
+  const handleImportDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!confirm("Isso irá sobrescrever todos os dados atuais. Deseja continuar?")) {
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await sqliteService.importDatabase(file);
+      await loadEmployees();
+      alert("Banco de dados restaurado com sucesso!");
+    } catch (err) {
+      alert("Erro ao importar banco de dados. Certifique-se de que é um arquivo .sqlite válido.");
+    } finally {
+      setIsLoading(false);
+      e.target.value = '';
+    }
+  };
+
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => 
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -197,16 +219,33 @@ const App: React.FC = () => {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 space-y-2">
           <button 
             onClick={() => sqliteService.exportDatabase()}
-            className="w-full flex items-center justify-center gap-2 p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all"
+            className="w-full flex items-center justify-center gap-2 p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all text-blue-400"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg>
-            BACKUP SQLITE
+            EXPORTAR SQLITE
           </button>
+          
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full flex items-center justify-center gap-2 p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all text-amber-400"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            RESTAURAR SQLITE
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleImportDatabase} 
+            accept=".sqlite" 
+            className="hidden" 
+          />
         </div>
       </aside>
 
@@ -261,7 +300,7 @@ const App: React.FC = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        Exportar PDF
+                        Relatório PDF
                       </button>
                       <div className="text-sm font-bold text-slate-400">
                         {filteredEmployees.length} registros

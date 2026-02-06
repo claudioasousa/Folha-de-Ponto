@@ -139,5 +139,26 @@ export const sqliteService = {
     a.download = "secretaria_digital.sqlite";
     a.click();
     URL.revokeObjectURL(url);
+  },
+
+  async importDatabase(file: File) {
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const SQL = await initSqlJs({
+            locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+          });
+          const u8 = new Uint8Array(reader.result as ArrayBuffer);
+          db = new SQL.Database(u8);
+          this.saveToLocalStorage();
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
   }
 };
