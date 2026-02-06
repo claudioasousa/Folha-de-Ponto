@@ -105,9 +105,15 @@ const App: React.FC = () => {
     // Header do Relatório
     let currentY = 20;
     if (savedHeader) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = savedHeader;
-      const headerLines = tempDiv.innerText.split('\n').filter(l => l.trim() !== '');
+      // Processa HTML para texto com quebras de linha reais
+      const processedHtml = savedHeader
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<[^>]+>/g, '');
+      
+      const headerLines = processedHtml.split('\n').map(l => l.trim()).filter(l => l !== '');
+      
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
       headerLines.forEach(line => {

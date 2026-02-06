@@ -65,9 +65,16 @@ export const TimesheetModule: React.FC<TimesheetModuleProps> = ({ employees }) =
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     // Header do Documento (Cabeçalho Institucional)
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = editorRef.current?.innerHTML || headerContent;
-    const lines = tempDiv.innerText.split('\n').filter(line => line.trim() !== '');
+    const rawHtml = editorRef.current?.innerHTML || headerContent;
+    
+    // Converte HTML em texto preservando quebras de linha
+    const processedHtml = rawHtml
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<[^>]+>/g, '');
+    
+    const lines = processedHtml.split('\n').map(l => l.trim()).filter(line => line !== '');
     
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
@@ -95,7 +102,7 @@ export const TimesheetModule: React.FC<TimesheetModuleProps> = ({ employees }) =
     doc.text(`MÊS DE REFERÊNCIA: ${months[month].toUpperCase()}`, 120, currentY + 13);
     doc.text(`ANO: ${year}`, 120, currentY + 19);
 
-    // Tabela de Frequência (Removido Retorno, Coluna 3 vira Assinatura)
+    // Tabela de Frequência
     const tableData = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month, d);
