@@ -29,7 +29,7 @@ const App: React.FC = () => {
       const data = await sqliteService.getAllEmployees();
       setEmployees(data);
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao carregar lista de servidores:", err);
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +40,7 @@ const App: React.FC = () => {
       await sqliteService.addEmployee(emp);
       await loadEmployees();
     } catch (err: any) {
-      alert("Erro ao cadastrar: " + (err.message || "Matrícula duplicada"));
+      alert("Erro ao cadastrar: " + (err.message || "Erro desconhecido"));
     }
   };
 
@@ -49,8 +49,8 @@ const App: React.FC = () => {
       await sqliteService.updateEmployee(emp);
       setEditingEmployee(null);
       await loadEmployees();
-    } catch (err) {
-      alert("Erro ao atualizar.");
+    } catch (err: any) {
+      alert("Erro ao atualizar: " + (err.message || "Não foi possível salvar as alterações. Verifique se a matrícula é única."));
     }
   };
 
@@ -59,8 +59,8 @@ const App: React.FC = () => {
     try {
       await sqliteService.deleteEmployee(id);
       await loadEmployees();
-    } catch (err) {
-      alert("Erro ao excluir.");
+    } catch (err: any) {
+      alert("Erro ao excluir: " + (err.message || "Erro desconhecido"));
     }
   };
 
@@ -258,7 +258,7 @@ const App: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">V 2.5 - SQLite</span>
+            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">V 2.6 - SQLite</span>
           </div>
         </header>
 
