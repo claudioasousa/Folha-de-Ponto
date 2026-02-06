@@ -1,0 +1,5 @@
+{
+  "name": "SQLite Colab Manager",
+  "description": "A high-end employee management system that persists data in a local SQLite database using SQL.js for browser-side relational storage.",
+  "requestFramePermissions": []
+}
