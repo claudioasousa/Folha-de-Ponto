@@ -1,14 +1,12 @@
 
+export type ShiftType = 'Manhã' | 'Tarde' | 'Noite' | 'Integral';
+
 export interface Employee {
   id?: number;
   name: string;
   registration: string;
   role: string;
-  workHours: number;
+  shift: ShiftType;
 }
 
-export interface AppState {
-  employees: Employee[];
-  isLoading: boolean;
-  error: string | null;
-}
+export type ActiveModule = 'funcionarios' | 'folha';

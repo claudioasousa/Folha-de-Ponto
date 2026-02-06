@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Employee } from '../types';
+import { Employee, ShiftType } from '../types';
 
 interface EmployeeFormProps {
   onAdd: (employee: Employee) => void;
@@ -19,14 +19,14 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     name: '',
     registration: '',
     role: '',
-    workHours: 40
+    shift: 'Manhã'
   });
 
   useEffect(() => {
     if (editingEmployee) {
       setFormData(editingEmployee);
     } else {
-      setFormData({ name: '', registration: '', role: '', workHours: 40 });
+      setFormData({ name: '', registration: '', role: '', shift: 'Manhã' });
     }
   }, [editingEmployee]);
 
@@ -40,104 +40,84 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       onAdd(formData);
     }
     
-    setFormData({ name: '', registration: '', role: '', workHours: 40 });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'workHours' ? parseInt(value) || 0 : value
-    }));
+    setFormData({ name: '', registration: '', role: '', shift: 'Manhã' });
   };
 
   return (
     <div className={`bg-white p-6 rounded-xl shadow-sm border transition-colors ${editingEmployee ? 'border-amber-200 ring-1 ring-amber-100' : 'border-slate-200'}`}>
-      <h2 className="text-xl font-semibold mb-6 text-slate-800 flex items-center gap-2">
-        {editingEmployee ? (
-          <>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Editar Colaborador
-          </>
-        ) : (
-          <>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Novo Colaborador
-          </>
-        )}
+      <h2 className="text-lg font-bold mb-6 text-slate-800 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        {editingEmployee ? 'Editar Servidor' : 'Cadastrar Servidor'}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
+          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Servidor</label>
           <input
             type="text"
-            name="name"
             value={formData.name}
-            onChange={handleChange}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
             required
-            placeholder="Ex: João da Silva"
+            placeholder="Nome completo do servidor"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
           />
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Matrícula</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Matrícula</label>
             <input
               type="text"
-              name="registration"
               value={formData.registration}
-              onChange={handleChange}
+              onChange={(e) => setFormData({...formData, registration: e.target.value})}
               required
-              placeholder="Ex: 2024001"
+              placeholder="Nº Matrícula"
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Carga Horária (Semanal)</label>
-            <input
-              type="number"
-              name="workHours"
-              value={formData.workHours}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            />
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Turno</label>
+            <select
+              value={formData.shift}
+              onChange={(e) => setFormData({...formData, shift: e.target.value as ShiftType})}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
+            >
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+              <option value="Integral">Integral</option>
+            </select>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Função</label>
+          <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Função / Cargo</label>
           <input
             type="text"
-            name="role"
             value={formData.role}
-            onChange={handleChange}
+            onChange={(e) => setFormData({...formData, role: e.target.value})}
             required
-            placeholder="Ex: Desenvolvedor Senior"
+            placeholder="Ex: Professor, Administrativo..."
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
           />
         </div>
 
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 pt-2">
           {editingEmployee && (
             <button
               type="button"
               onClick={onCancelEdit}
-              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg transition-colors"
+              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
             >
               Cancelar
             </button>
           )}
           <button
             type="submit"
-            className={`flex-[2] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors shadow-sm ${editingEmployee ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+            className={`flex-[2] text-white font-bold py-2.5 px-4 rounded-lg transition-colors shadow-sm text-sm ${editingEmployee ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'}`}
           >
-            {editingEmployee ? 'Salvar Alterações' : 'Cadastrar Colaborador'}
+            {editingEmployee ? 'Salvar Alterações' : 'Confirmar Cadastro'}
           </button>
         </div>
       </form>

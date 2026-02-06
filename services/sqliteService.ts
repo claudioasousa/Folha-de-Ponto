@@ -34,7 +34,7 @@ export const sqliteService = {
             name TEXT NOT NULL,
             registration TEXT UNIQUE NOT NULL,
             role TEXT NOT NULL,
-            workHours INTEGER NOT NULL
+            shift TEXT NOT NULL
           )
         `);
       }
@@ -48,7 +48,7 @@ export const sqliteService = {
   async getAllEmployees(): Promise<Employee[]> {
     const database = await this.init();
     try {
-      const res = database.exec("SELECT * FROM employees ORDER BY id DESC");
+      const res = database.exec("SELECT * FROM employees ORDER BY name ASC");
       if (res.length === 0) return [];
       const columns = res[0].columns;
       const values = res[0].values;
@@ -67,8 +67,8 @@ export const sqliteService = {
   async addEmployee(employee: Employee) {
     const database = await this.init();
     database.run(
-      "INSERT INTO employees (name, registration, role, workHours) VALUES (?, ?, ?, ?)",
-      [employee.name, employee.registration, employee.role, employee.workHours]
+      "INSERT INTO employees (name, registration, role, shift) VALUES (?, ?, ?, ?)",
+      [employee.name, employee.registration, employee.role, employee.shift]
     );
     this.saveToLocalStorage();
   },
@@ -77,8 +77,8 @@ export const sqliteService = {
     if (!employee.id) return;
     const database = await this.init();
     database.run(
-      "UPDATE employees SET name = ?, registration = ?, role = ?, workHours = ? WHERE id = ?",
-      [employee.name, employee.registration, employee.role, employee.workHours, employee.id]
+      "UPDATE employees SET name = ?, registration = ?, role = ?, shift = ? WHERE id = ?",
+      [employee.name, employee.registration, employee.role, employee.shift, employee.id]
     );
     this.saveToLocalStorage();
   },
@@ -106,29 +106,8 @@ export const sqliteService = {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "colaboradores.sqlite";
+    a.download = "secretaria_digital.sqlite";
     a.click();
     URL.revokeObjectURL(url);
-  },
-
-  async importDatabase(file: File): Promise<void> {
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
-      reader.onload = async () => {
-        try {
-          const SQL = await initSqlJs({
-            locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-          });
-          const u8 = new Uint8Array(reader.result as ArrayBuffer);
-          db = new SQL.Database(u8);
-          this.saveToLocalStorage();
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
   }
 };
